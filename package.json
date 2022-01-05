@@ -1,0 +1,29 @@
+{
+  "name": "api-jcsalinas20.web.app",
+  "version": "1.0.0",
+  "description": "API for jcsalinas20.web.app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcsalinas20/api-jcsalinas20.web.app.git"
+  },
+  "author": "Juan Carlos Salinas Navarrete",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jcsalinas20/api-jcsalinas20.web.app/issues"
+  },
+  "homepage": "https://github.com/jcsalinas20/api-jcsalinas20.web.app#readme",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "body-parser": "^1.19.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.2",
+    "moment": "^2.29.1",
+    "nodemon": "^2.0.15",
+    "sha1": "^1.1.1"
+  }
+}
