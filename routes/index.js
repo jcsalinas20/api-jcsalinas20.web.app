@@ -7,7 +7,7 @@ module.exports = () => {
 
   routes.get("/user/get", control.getUser);
 
-  //   routes.get("/orgs/get", control.getOrgs);
+  routes.get("/orgs/get", control.getOrgs);
 
   //   routes.get("/repos/put", control.updateRepos);
 

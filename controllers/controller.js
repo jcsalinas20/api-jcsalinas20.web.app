@@ -1,6 +1,7 @@
 const endpoint = require("../services/endPoints");
 const json = require("../services/json");
 const userModel = require("../models/user");
+const orgsModel = require("../models/orgs");
 
 /*** USER ***/
 
@@ -28,3 +29,17 @@ exports.getUser = async (req, res) => {
     }
   });
 };
+
+/*** ORGANIZATIONS ***/
+
+exports.getOrgs = (req, res) => {
+    orgsModel.find({ type: "organization" }, function (err, doc) {
+      if (err) {
+        res.header("Content-Type", "application/json");
+        res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+      } else {
+        res.header("Content-Type", "application/json");
+        res.send(JSON.stringify({ orgs: doc }, null, 2));
+      }
+    });
+  };
