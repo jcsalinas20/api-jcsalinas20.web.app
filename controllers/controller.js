@@ -4,18 +4,18 @@ const userModel = require("../models/user");
 
 /*** USER ***/
 
-// exports.updateUser = async (req, res) => {
-//   const user = await endpoint.getUser("jcsalinas20");
-//   userModel.findOneAndUpdate({ type: "user" }, json.user(user), (err, doc) => {
-//     if (doc) {
-//       res.header("Content-Type", "application/json");
-//       res.send(JSON.stringify({ status: true }, null, 2));
-//     } else {
-//       res.header("Content-Type", "application/json");
-//       res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-//     }
-//   });
-// };
+exports.updateUser = async (req, res) => {
+  const user = await endpoint.getUser("jcsalinas20");
+  userModel.findOneAndUpdate({ type: "user" }, json.user(user), (err, doc) => {
+    if (doc) {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: true }, null, 2));
+    } else {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+    }
+  });
+};
 
 exports.getUser = async (req, res) => {
   userModel.findOne({ type: "user" }, function (err, doc) {

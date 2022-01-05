@@ -3,6 +3,7 @@ require("dotenv").config();
 const bodyParser = require("body-parser");
 const mongo = require("mongoose");
 const app = express();
+const router = require("./routes/index.js");
 
 const port = process.env.PORT;
 const db = process.env.DB;
@@ -40,6 +41,8 @@ app.use(function (req, res, next) {
   );
   next();
 });
+
+app.use("/api/git/", router());
 
 app.listen(port, async () => {
   console.log("API REST corriendo en el puerto " + port);
