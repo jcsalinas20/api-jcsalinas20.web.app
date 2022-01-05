@@ -15,7 +15,7 @@ module.exports = () => {
 
   //   routes.post("/collabs/post", control.createCollab);
 
-  //   routes.get("/collabs/get", control.getCollabs);
+  routes.get("/collabs/get", control.getCollabs);
 
   //   routes.get("/stats/put", control.putStats);
 

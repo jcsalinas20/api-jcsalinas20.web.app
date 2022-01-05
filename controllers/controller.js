@@ -3,6 +3,7 @@ const json = require("../services/json");
 const userModel = require("../models/user");
 const orgsModel = require("../models/orgs");
 const reposModel = require("../models/repos");
+const collabsModel = require("../models/collabs");
 
 /*** USER ***/
 
@@ -108,3 +109,21 @@ exports.getRepos = async (req, res) => {
     }
   });
 };
+
+/*** COLLABORATIONS ***/
+
+exports.getCollabs = (req, res) => {
+  collabsModel.find({ type: "collaboration" }, function (err, doc) {
+    if (err) {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: "Error" }, null, 2));
+      return {};
+    } else {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ collabs: doc }, null, 2));
+      return {};
+    }
+  });
+};
+
+/*** COUNTS ***/
