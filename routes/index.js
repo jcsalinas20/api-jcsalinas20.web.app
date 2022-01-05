@@ -11,7 +11,7 @@ module.exports = () => {
 
   //   routes.get("/repos/put", control.updateRepos);
 
-  //   routes.get("/repos/get", control.getRepos);
+  routes.get("/repos/get", control.getRepos);
 
   //   routes.post("/collabs/post", control.createCollab);
 

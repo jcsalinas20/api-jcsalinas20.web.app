@@ -2,6 +2,7 @@ const endpoint = require("../services/endPoints");
 const json = require("../services/json");
 const userModel = require("../models/user");
 const orgsModel = require("../models/orgs");
+const reposModel = require("../models/repos");
 
 /*** USER ***/
 
@@ -33,13 +34,27 @@ exports.getUser = async (req, res) => {
 /*** ORGANIZATIONS ***/
 
 exports.getOrgs = (req, res) => {
-    orgsModel.find({ type: "organization" }, function (err, doc) {
-      if (err) {
-        res.header("Content-Type", "application/json");
-        res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-      } else {
-        res.header("Content-Type", "application/json");
-        res.send(JSON.stringify({ orgs: doc }, null, 2));
-      }
-    });
-  };
+  orgsModel.find({ type: "organization" }, function (err, doc) {
+    if (err) {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+    } else {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ orgs: doc }, null, 2));
+    }
+  });
+};
+
+/*** REPOSITORIES ***/
+
+exports.getRepos = async (req, res) => {
+  reposModel.find({ type: "repository" }, function (err, doc) {
+    if (err) {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+    } else {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ repos: doc }, null, 2));
+    }
+  });
+};
