@@ -9,7 +9,7 @@ module.exports = () => {
 
   routes.get("/orgs/get", control.getOrgs);
 
-  //   routes.get("/repos/put", control.updateRepos);
+  routes.get("/repos/put", control.updateRepos);
 
   routes.get("/repos/get", control.getRepos);
 

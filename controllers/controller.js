@@ -47,6 +47,56 @@ exports.getOrgs = (req, res) => {
 
 /*** REPOSITORIES ***/
 
+exports.updateRepos = async (req, res) => {
+  let reposStatus = {};
+  const repos = await endpoint.getRepos("jcsalinas20");
+
+  for await (const repo of repos) {
+    const findDoc = reposModel.findOne(
+      { type: "repository", id: repo.id },
+      (err, doc) => {
+        if (err) {
+          return -1;
+        } else {
+          return doc;
+        }
+      }
+    );
+
+    if (findDoc) {
+      if (repo.updated_at > findDoc.updated) {
+        const lang = await endpoint.getLang(repo.owner.login, repo.name);
+        const releases = await endpoint.getReleases(
+          repo.owner.login,
+          repo.name
+        );
+
+        reposStatus[repo.full_name] = "Updated";
+        const updated = await reposModel.updateOne(
+          { type: "repository", id: repo.id },
+          json.repository(repo, lang, releases)
+        );
+
+        if (updated.ok) {
+          reposStatus[repo.full_name] = "Updated";
+        } else {
+          reposStatus[repo.full_name] = "Failed";
+        }
+      } else {
+        reposStatus[repo.full_name] = "No changes";
+      }
+    } else {
+      const lang = await endpoint.getLang(repo.owner.login, repo.name);
+      const releases = await endpoint.getReleases(repo.owner.login, repo.name);
+      reposModel.create(json.repository(repo, lang, releases));
+      reposStatus[repo.full_name] = "Created";
+    }
+  }
+
+  res.header("Content-Type", "application/json");
+  res.send(JSON.stringify(reposStatus, null, 2));
+};
+
 exports.getRepos = async (req, res) => {
   reposModel.find({ type: "repository" }, function (err, doc) {
     if (err) {

@@ -14,4 +14,31 @@ module.exports = {
       url: user.html_url,
     };
   },
+
+  releases: (releases) => {
+    let rels = [];
+    for (const release of releases) {
+      let rel = {
+        owner: release.author.login,
+        name: release.name,
+        body: release.body,
+        tagname: release.tag_name,
+        url: release.html_url,
+        draft: release.draft,
+        published: release.published_at,
+        src_zip_url: release.zipball_url,
+        assets: [],
+      };
+      for (const asset of release.assets) {
+        rel.assets.push({
+          name: asset.name,
+          size: asset.size,
+          download_count: asset.download_count,
+          download_url: asset.browser_download_url,
+        });
+      }
+      rels.push(rel);
+    }
+    return rels;
+  },
 };
