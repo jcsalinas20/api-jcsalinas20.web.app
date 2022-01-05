@@ -59,4 +59,17 @@ module.exports = {
       updated: collaboration.updated_at,
     };
   },
+
+  contributors: (contributors) => {
+    let contr = [];
+    for (const contributor of contributors) {
+      contr.push({
+        username: contributor.login,
+        avatar: contributor.avatar_url,
+        url: contributor.html_url,
+        commits: contributor.contributions,
+      });
+    }
+    return contr;
+  },
 };
