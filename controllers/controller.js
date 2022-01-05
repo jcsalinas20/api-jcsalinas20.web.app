@@ -112,6 +112,64 @@ exports.getRepos = async (req, res) => {
 
 /*** COLLABORATIONS ***/
 
+exports.createCollab = async (req, res) => {
+  const collab = await endpoint.getPublicCollabs(req.body.user, req.body.repo);
+
+  const findDoc = collabsModel.findOne(
+    { type: "collaboration", id: collab.id },
+    (err, doc) => {
+      if (err) {
+        return -1;
+      } else {
+        return doc;
+      }
+    }
+  );
+
+  if (findDoc) {
+    if (collab.updated_at > findDoc.updated) {
+      const lang = await endpoint.getLang(collab.owner.login, collab.name);
+      const releases = await endpoint.getReleases(
+        collab.owner.login,
+        collab.name
+      );
+      const contributors = await endpoint.getContributors(
+        collab.owner.login,
+        collab.name
+      );
+      const updated = await collabsModel.updateOne(
+        { type: "collaboration", id: collab.id },
+        json.collaboration(collab, lang, releases, contributors)
+      );
+      if (updated.ok) {
+        res.header("Content-Type", "application/json");
+        res.send(JSON.stringify({ status: "Updated" }, null, 2));
+      } else {
+        res.header("Content-Type", "application/json");
+        res.send(JSON.stringify({ status: "Failed" }, null, 2));
+      }
+    } else {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: "No changes" }, null, 2));
+    }
+  } else {
+    const lang = await endpoint.getLang(collab.owner.login, collab.name);
+    const releases = await endpoint.getReleases(
+      collab.owner.login,
+      collab.name
+    );
+    const contributors = await endpoint.getContributors(
+      collab.owner.login,
+      collab.name
+    );
+    collabsModel.create(
+      json.collaboration(collab, lang, releases, contributors)
+    );
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Created" }, null, 2));
+  }
+};
+
 exports.getCollabs = (req, res) => {
   collabsModel.find({ type: "collaboration" }, function (err, doc) {
     if (err) {

@@ -13,7 +13,7 @@ module.exports = () => {
 
   routes.get("/repos/get", control.getRepos);
 
-  //   routes.post("/collabs/post", control.createCollab);
+  routes.post("/collabs/post", control.createCollab);
 
   routes.get("/collabs/get", control.getCollabs);
 

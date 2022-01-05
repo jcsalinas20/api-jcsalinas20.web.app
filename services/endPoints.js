@@ -64,4 +64,18 @@ module.exports = {
       return res.data;
     });
   },
+
+  getPublicCollabs: async (username, repository) => {
+    const req = endpoint("GET /repos/{user}/{repo}", {
+      headers: {
+        authorization: `token ${process.env.GITHUB_TOKEN}`,
+      },
+      user: username,
+      repo: repository,
+    });
+
+    return await axios(req).then((res) => {
+      return res.data;
+    });
+  },
 };
