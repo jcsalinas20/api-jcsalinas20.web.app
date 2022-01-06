@@ -25,7 +25,7 @@ module.exports = () => {
 
   routes.get("/count/collabs", control.countCollab);
 
-  //   routes.get("/count/lang", control.countLang);
+  routes.get("/count/lang", control.countLang);
 
   return routes;
 };

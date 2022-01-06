@@ -218,24 +218,70 @@ exports.countStars = (req, res) => {
 };
 
 exports.countCollab = (req, res) => {
-    collabsModel.find({ type: "collaboration" }, function (err, docs) {
-      if (err) {
-        res.header("Content-Type", "application/json");
-        res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-      } else {
-        userModel.findOneAndUpdate(
-          { type: "user" },
-          { collaborations: docs.length },
-          (err, doc) => {
-            if (err) {
-              res.header("Content-Type", "application/json");
-              res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-            } else {
-              res.header("Content-Type", "application/json");
-              res.send(JSON.stringify({ collaborations: docs.length }, null, 2));
-            }
+  collabsModel.find({ type: "collaboration" }, function (err, docs) {
+    if (err) {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+    } else {
+      userModel.findOneAndUpdate(
+        { type: "user" },
+        { collaborations: docs.length },
+        (err, doc) => {
+          if (err) {
+            res.header("Content-Type", "application/json");
+            res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+          } else {
+            res.header("Content-Type", "application/json");
+            res.send(JSON.stringify({ collaborations: docs.length }, null, 2));
           }
-        );
+        }
+      );
+    }
+  });
+};
+
+exports.countLang = (req, res) => {
+  let langsJson = {};
+  let langs = [];
+  reposModel.find({ type: "repository" }, function (err, docs) {
+    if (err) {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+    } else {
+      for (const repo of docs) {
+        if (
+          repo.languages &&
+          repo.name != "wordpress-the-dynamic" &&
+          repo.name != "wordpress-mundo-anime"
+        ) {
+          Object.keys(repo.languages).forEach(function (key) {
+            if (!langsJson[key]) {
+              langsJson[key] = 0;
+            }
+            langsJson[key] += repo.languages[key];
+          });
+        }
       }
-    });
-  };
+      Object.keys(langsJson).forEach(function (key) {
+        langs.push({ name: key, lines: langsJson[key] });
+      });
+      langs.sort(function (a, b) {
+        return a.lines - b.lines;
+      });
+      langs.reverse();
+      userModel.findOneAndUpdate(
+        { type: "user" },
+        { languages: langs },
+        (err, doc) => {
+          if (err) {
+            res.header("Content-Type", "application/json");
+            res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+          } else {
+            res.header("Content-Type", "application/json");
+            res.send(JSON.stringify({ languages: langs }, null, 2));
+          }
+        }
+      );
+    }
+  });
+};
