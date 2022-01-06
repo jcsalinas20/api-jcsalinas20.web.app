@@ -23,7 +23,7 @@ module.exports = () => {
 
   routes.get("/count/stars", control.countStars);
 
-  //   routes.get("/count/collabs", control.countCollab);
+  routes.get("/count/collabs", control.countCollab);
 
   //   routes.get("/count/lang", control.countLang);
 

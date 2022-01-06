@@ -216,3 +216,26 @@ exports.countStars = (req, res) => {
     }
   });
 };
+
+exports.countCollab = (req, res) => {
+    collabsModel.find({ type: "collaboration" }, function (err, docs) {
+      if (err) {
+        res.header("Content-Type", "application/json");
+        res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+      } else {
+        userModel.findOneAndUpdate(
+          { type: "user" },
+          { collaborations: docs.length },
+          (err, doc) => {
+            if (err) {
+              res.header("Content-Type", "application/json");
+              res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+            } else {
+              res.header("Content-Type", "application/json");
+              res.send(JSON.stringify({ collaborations: docs.length }, null, 2));
+            }
+          }
+        );
+      }
+    });
+  };
