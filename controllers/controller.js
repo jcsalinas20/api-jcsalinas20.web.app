@@ -188,3 +188,31 @@ exports.getCollabs = (req, res) => {
 };
 
 /*** COUNTS ***/
+
+exports.countStars = (req, res) => {
+  reposModel.find({ type: "repository" }, function (err, docs) {
+    if (err) {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+    } else {
+      let totalStars = 0;
+      for (const doc of docs) {
+        totalStars += parseInt(doc.stars);
+      }
+
+      userModel.findOneAndUpdate(
+        { type: "user" },
+        { stars: totalStars },
+        (err, doc) => {
+          if (err) {
+            res.header("Content-Type", "application/json");
+            res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+          } else {
+            res.header("Content-Type", "application/json");
+            res.send(JSON.stringify({ stars: totalStars }, null, 2));
+          }
+        }
+      );
+    }
+  });
+};

@@ -21,7 +21,7 @@ module.exports = () => {
 
   //   routes.get("/stats/get/:year/:theme", control.getStats);
 
-  //   routes.get("/count/stars", control.countStars);
+  routes.get("/count/stars", control.countStars);
 
   //   routes.get("/count/collabs", control.countCollab);
 
