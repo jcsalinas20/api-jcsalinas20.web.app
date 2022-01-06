@@ -1,4 +1,21 @@
 module.exports = {
+  repository: (repo, lang, releases) => {
+    return {
+      id: repo.id,
+      owner: repo.owner.login,
+      name: repo.name,
+      url: repo.html_url,
+      description: repo.description,
+      languages: lang,
+      releases: releases,
+      stars: repo.stargazers_count,
+      archived: repo.archived,
+      topics: repo.topics,
+      type: "repository",
+      updated: repo.updated_at,
+    };
+  },
+
   user: (user) => {
     return {
       username: user.login,
