@@ -9,25 +9,6 @@ const statsModel = require("../models/stats");
 
 /*** USER ***/
 
-exports.updateUser = async (req, res) => {
-  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
-    res.header("Content-Type", "application/json");
-    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
-    return;
-  }
-
-  const user = await endpoint.getUser("jcsalinas20");
-  userModel.findOneAndUpdate({ type: "user" }, json.user(user), (err, doc) => {
-    if (doc) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: true }, null, 2));
-    } else {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    }
-  });
-};
-
 exports.getUser = async (req, res) => {
   if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
     res.header("Content-Type", "application/json");
@@ -35,15 +16,12 @@ exports.getUser = async (req, res) => {
     return;
   }
 
-  userModel.findOne({ type: "user" }, function (err, doc) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ user: doc }, null, 2));
-    }
-  });
+  const gitStats = await endpoint.getGitStats("jcsalinas20");
+  console.log(gitStats);
+  const user = json.user(gitStats.user);
+  res.header("Content-Type", "application/json");
+  res.send(JSON.stringify({ user }, null, 2));
+  return;
 };
 
 /*** ORGANIZATIONS ***/

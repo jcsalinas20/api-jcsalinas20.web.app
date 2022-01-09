@@ -4,16 +4,59 @@ const axios = require("axios");
 const json = require("./json");
 
 module.exports = {
-  getUser: async (username) => {
-    const req = endpoint("GET /users/{user}", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-    });
-    return await axios(req).then((res) => {
-      return res.data;
-    });
+  getGitStats: async (username) => {
+    return await graphql(
+      `
+        query ($username: String!) {
+          user(login: $username) {
+            avatarUrl
+            websiteUrl
+            company
+            email
+            location
+            name
+            twitterUsername
+            url
+            login
+            followers {
+              totalCount
+            }
+            repositories(
+              ownerAffiliations: [OWNER, COLLABORATOR]
+              isFork: false
+              first: 100
+            ) {
+              nodes {
+                name
+                isPrivate
+                owner {
+                  login
+                }
+                stargazerCount
+                languages(
+                  first: 10
+                  orderBy: { field: SIZE, direction: DESC }
+                ) {
+                  edges {
+                    size
+                    node {
+                      color
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      {
+        username: username,
+        headers: {
+          authorization: `token ${process.env.GITHUB_TOKEN}`,
+        },
+      }
+    );
   },
 
   getRepos: async (username) => {
@@ -84,7 +127,7 @@ module.exports = {
       })
     );
   },
-  
+
   getPrivateCollabs: async (username) => {
     return await graphql(
       `

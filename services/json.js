@@ -19,18 +19,22 @@ module.exports = {
   },
 
   user: (user) => {
+    const counts = s.countGitStats(user.repositories.nodes, user.login);
     return {
       username: user.login,
-      avatar: user.avatar_url,
-      blog: user.blog,
+      avatar: user.avatarUrl,
+      website: user.websiteUrl,
       company: user.company,
       email: user.email,
-      followers: user.followers,
+      followers: user.followers.totalCount,
       location: user.location,
       name: user.name,
-      public_repos: user.public_repos,
-      twitter: user.twitter_username,
-      url: user.html_url,
+      twitter: user.twitterUsername,
+      url: user.rl,
+      repos: counts.repos,
+      stars: counts.stars,
+      collabs: counts.collabs,
+      languages: counts.langs,
     };
   },
 
