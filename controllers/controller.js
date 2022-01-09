@@ -23,6 +23,12 @@ exports.updateUser = async (req, res) => {
 };
 
 exports.getUser = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   userModel.findOne({ type: "user" }, function (err, doc) {
     if (err) {
       res.header("Content-Type", "application/json");
@@ -37,6 +43,12 @@ exports.getUser = async (req, res) => {
 /*** ORGANIZATIONS ***/
 
 exports.getOrgs = (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   orgsModel.find({ type: "organization" }, function (err, doc) {
     if (err) {
       res.header("Content-Type", "application/json");
@@ -101,6 +113,12 @@ exports.updateRepos = async (req, res) => {
 };
 
 exports.getRepos = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   reposModel.find({ type: "repository" }, function (err, doc) {
     if (err) {
       res.header("Content-Type", "application/json");
@@ -176,6 +194,12 @@ exports.createCollab = async (req, res) => {
 };
 
 exports.getCollabs = (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   collabsModel.find({ type: "collaboration" }, function (err, doc) {
     if (err) {
       res.header("Content-Type", "application/json");

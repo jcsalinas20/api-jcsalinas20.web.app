@@ -71,6 +71,18 @@ const self = (module.exports = {
     return { 2022: 0, 2021: 0, 2020: 0 };
   },
 
+  auth: (origin, token, level) => {
+    let allowedOrigins = JSON.parse(process.env.ALLOWED_ORIGIN);
+    if (level === 1) {
+      if (allowedOrigins.indexOf(origin) != -1) {
+        return true;
+      } else if (token === process.env.JWT_API) {
+        return true;
+      }
+    }
+    return false;
+  },
+
   getCommitsFromGithubPage: async (username) => {
     const years = ["2020", "2021"];
     let countCommits = self.years();
