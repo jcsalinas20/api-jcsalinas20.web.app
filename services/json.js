@@ -1,3 +1,5 @@
+const s = require("./services");
+
 module.exports = {
   repository: (repo, lang, releases) => {
     return {
@@ -88,5 +90,19 @@ module.exports = {
       });
     }
     return contr;
+  },
+
+  stats: (name, stars, commits, pullRequests, issues, collaborations) => {
+    const stats = {};
+    for (const year in s.years()) {
+      stats[year] = {};
+      stats[year].name = name;
+      stats[year].stars = stars[year];
+      stats[year].commits = commits[year];
+      stats[year].pullRequests = pullRequests[year];
+      stats[year].issues = issues[year];
+      stats[year].collaborations = collaborations[year];
+    }
+    return stats;
   },
 };
