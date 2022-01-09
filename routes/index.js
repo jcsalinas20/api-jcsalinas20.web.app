@@ -17,15 +17,15 @@ module.exports = () => {
 
   routes.get("/collabs/get", control.getCollabs);
 
-  //   routes.get("/stats/put", control.putStats);
+  routes.get("/stats/put", control.putStats);
 
-  //   routes.get("/stats/get/:year/:theme", control.getStats);
+  routes.get("/stats/get/:year/:theme", control.getStats);
 
-  //   routes.get("/count/stars", control.countStars);
+  routes.get("/count/stars", control.countStars);
 
-  //   routes.get("/count/collabs", control.countCollab);
+  routes.get("/count/collabs", control.countCollab);
 
-  //   routes.get("/count/lang", control.countLang);
+  routes.get("/count/lang", control.countLang);
 
   return routes;
 };

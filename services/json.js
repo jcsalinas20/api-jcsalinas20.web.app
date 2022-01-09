@@ -1,4 +1,23 @@
+const s = require("./services");
+
 module.exports = {
+  repository: (repo, lang, releases) => {
+    return {
+      id: repo.id,
+      owner: repo.owner.login,
+      name: repo.name,
+      url: repo.html_url,
+      description: repo.description,
+      languages: lang,
+      releases: releases,
+      stars: repo.stargazers_count,
+      archived: repo.archived,
+      topics: repo.topics,
+      type: "repository",
+      updated: repo.updated_at,
+    };
+  },
+
   user: (user) => {
     return {
       username: user.login,
@@ -71,5 +90,19 @@ module.exports = {
       });
     }
     return contr;
+  },
+
+  stats: (name, stars, commits, pullRequests, issues, collaborations) => {
+    const stats = {};
+    for (const year in s.years()) {
+      stats[year] = {};
+      stats[year].name = name;
+      stats[year].stars = stars[year];
+      stats[year].commits = commits[year];
+      stats[year].pullRequests = pullRequests[year];
+      stats[year].issues = issues[year];
+      stats[year].collaborations = collaborations[year];
+    }
+    return stats;
   },
 };
