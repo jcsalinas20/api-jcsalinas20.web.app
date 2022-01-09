@@ -10,6 +10,12 @@ const statsModel = require("../models/stats");
 /*** USER ***/
 
 exports.updateUser = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   const user = await endpoint.getUser("jcsalinas20");
   userModel.findOneAndUpdate({ type: "user" }, json.user(user), (err, doc) => {
     if (doc) {
@@ -63,6 +69,12 @@ exports.getOrgs = (req, res) => {
 /*** REPOSITORIES ***/
 
 exports.updateRepos = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   let reposStatus = {};
   const repos = await endpoint.getRepos("jcsalinas20");
   let cont = 0;
@@ -133,6 +145,12 @@ exports.getRepos = async (req, res) => {
 /*** COLLABORATIONS ***/
 
 exports.createCollab = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   const collab = await endpoint.getPublicCollabs(req.body.user, req.body.repo);
 
   collabsModel.findOne(
@@ -216,6 +234,12 @@ exports.getCollabs = (req, res) => {
 /*** COUNTS ***/
 
 exports.countStars = (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   reposModel.find({ type: "repository" }, function (err, docs) {
     if (err) {
       res.header("Content-Type", "application/json");
@@ -244,6 +268,12 @@ exports.countStars = (req, res) => {
 };
 
 exports.countCollab = (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   collabsModel.find({ type: "collaboration" }, function (err, docs) {
     if (err) {
       res.header("Content-Type", "application/json");
@@ -267,6 +297,12 @@ exports.countCollab = (req, res) => {
 };
 
 exports.countLang = (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   let langsJson = {};
   let langs = [];
   reposModel.find({ type: "repository" }, function (err, docs) {
@@ -315,6 +351,12 @@ exports.countLang = (req, res) => {
 /*** USER STATUS ***/
 
 exports.putStats = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   const collaborations = await endpoint.getPrivateCollabs("jcsalinas20");
   const stars = await endpoint.getStars("jcsalinas20");
   const issues = await endpoint.getIssues("jcsalinas20");
@@ -376,6 +418,12 @@ exports.putStats = async (req, res) => {
 };
 
 exports.getStats = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
   const theme = req.params.theme;
   const year = req.params.year;
 
