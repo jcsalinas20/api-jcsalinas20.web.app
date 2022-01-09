@@ -350,3 +350,23 @@ exports.putStats = async (req, res) => {
     }
   }
 };
+
+exports.getStats = async (req, res) => {
+  const theme = req.params.theme;
+  const year = req.params.year;
+
+  statsModel.findOne({ year: year }, (err, doc) => {
+    if (err) {
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ status: "Failed" }, null, 2));
+      return;
+    } else {
+      const rank = s.calculate(doc);
+      const svg = s.createSvg(theme, doc, year, rank);
+
+      res.header("Content-Type", "application/json");
+      res.send(JSON.stringify({ svg }, null, 2));
+      return;
+    }
+  });
+};

@@ -19,7 +19,7 @@ module.exports = () => {
 
   routes.get("/stats/put", control.putStats);
 
-  //   routes.get("/stats/get/:year/:theme", control.getStats);
+  routes.get("/stats/get/:year/:theme", control.getStats);
 
   routes.get("/count/stars", control.countStars);
 
