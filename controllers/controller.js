@@ -15,9 +15,8 @@ exports.getUser = async (req, res) => {
     res.send(JSON.stringify({ status: "Error 503" }, null, 2));
     return;
   }
-
-  const gitStats = await endpoint.getGitStats("jcsalinas20");
-  console.log(gitStats);
+  
+  const gitStats = await endpoint.getGitStats(req.params.user);
   const user = json.user(gitStats.user);
   res.header("Content-Type", "application/json");
   res.send(JSON.stringify({ user }, null, 2));
