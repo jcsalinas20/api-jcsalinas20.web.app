@@ -1,12 +1,6 @@
 const s = require("./services");
 
 const self = (module.exports = {
-  repository: (repo, lang, releases) => {
-    return {
-      id: repo.id,
-    };
-  },
-
   repositories: (publicRepos) => {
     let repos = [];
     for (const repo of publicRepos) {

@@ -45,62 +45,6 @@ exports.getOrgs = (req, res) => {
 
 /*** REPOSITORIES ***/
 
-exports.updateRepos = async (req, res) => {
-  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
-    res.header("Content-Type", "application/json");
-    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
-    return;
-  }
-
-  let reposStatus = {};
-  const repos = await endpoint.getRepos("jcsalinas20");
-  let cont = 0;
-
-  for await (const repo of repos) {
-    cont++;
-    reposModel.findOne(
-      { type: "repository", id: repo.id },
-      async (err, doc) => {
-        if (err) {
-          reposStatus[repo.full_name] = "Failed";
-        } else {
-          if (doc) {
-            if (repo.updated_at > doc.updated) {
-              const lang = await endpoint.getLang(repo.owner.login, repo.name);
-              const releases = await endpoint.getReleases(
-                repo.owner.login,
-                repo.name
-              );
-
-              reposStatus[repo.full_name] = "Updated";
-              const updated = await reposModel.updateOne(
-                { type: "repository", id: repo.id },
-                json.repository(repo, lang, releases)
-              );
-
-              if (updated.ok) {
-                reposStatus[repo.full_name] = "Updated";
-              } else {
-                reposStatus[repo.full_name] = "Failed";
-              }
-            } else {
-              reposStatus[repo.full_name] = "No changes";
-            }
-          } else {
-            const lang = await endpoint.getLang(repo.owner.login, repo.name);
-            const releases = await endpoint.getReleases(
-              repo.owner.login,
-              repo.name
-            );
-            reposModel.create(json.repository(repo, lang, releases));
-            reposStatus[repo.full_name] = "Created";
-          }
-        }
-      }
-    );
-  }
-};
-
 exports.getRepos = async (req, res) => {
   if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
     res.header("Content-Type", "application/json");
