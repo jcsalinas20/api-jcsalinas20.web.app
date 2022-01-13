@@ -83,6 +83,16 @@ const self = (module.exports = {
     return false;
   },
 
+  getOnlyPublicRepos: (repos) => {
+    let publicRepos = [];
+    for (const repo of repos) {
+        if (!repo.isPrivate) {
+          publicRepos.push(repo);
+        }
+    }
+    return publicRepos;
+  },
+
   getCommitsFromGithubPage: async (username) => {
     const years = ["2020", "2021"];
     let countCommits = self.years();

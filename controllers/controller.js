@@ -15,7 +15,7 @@ exports.getUser = async (req, res) => {
     res.send(JSON.stringify({ status: "Error 503" }, null, 2));
     return;
   }
-  
+
   const gitStats = await endpoint.getGitStats(req.params.user);
   const user = json.user(gitStats.user);
   res.header("Content-Type", "application/json");
@@ -108,15 +108,11 @@ exports.getRepos = async (req, res) => {
     return;
   }
 
-  reposModel.find({ type: "repository" }, function (err, doc) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ repos: doc }, null, 2));
-    }
-  });
+  const allRepos = await endpoint.getRepositories(req.params.user);
+  const publicRepos = s.getOnlyPublicRepos(allRepos.user.repositories.nodes);
+  const repos = json.repositories(publicRepos);
+  res.header("Content-Type", "application/json");
+  res.send(JSON.stringify({ repos }, null, 2));
 };
 
 /*** COLLABORATIONS ***/

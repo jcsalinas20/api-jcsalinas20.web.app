@@ -3,13 +3,13 @@ const routes = express.Router();
 const control = require("../controllers/controller");
 
 module.exports = () => {
-  routes.get("/:user/get", control.getUser);
+  routes.get("/:user", control.getUser);
 
   routes.get("/orgs/get", control.getOrgs);
 
-  routes.get("/repos/put", control.updateRepos);
+  // routes.get("/repos/put", control.updateRepos);
 
-  routes.get("/repos/get", control.getRepos);
+  routes.get("/:user/repos", control.getRepos);
 
   routes.post("/collabs/post", control.createCollab);
 

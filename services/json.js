@@ -1,21 +1,121 @@
 const s = require("./services");
 
-module.exports = {
+const self = (module.exports = {
   repository: (repo, lang, releases) => {
     return {
       id: repo.id,
-      owner: repo.owner.login,
-      name: repo.name,
-      url: repo.html_url,
-      description: repo.description,
-      languages: lang,
-      releases: releases,
-      stars: repo.stargazers_count,
-      archived: repo.archived,
-      topics: repo.topics,
-      type: "repository",
-      updated: repo.updated_at,
     };
+  },
+
+  repositories: (publicRepos) => {
+    let repos = [];
+    for (const repo of publicRepos) {
+      const banner = repo.usesCustomOpenGraphImage
+        ? repo.openGraphImageUrl
+        : null;
+      const wikiUrl = repo.hasWikiEnabled ? repo.url + "/wiki" : null;
+      const blog = repo.homepageUrl ? repo.homepageUrl : null;
+      let license = null;
+      if (repo.licenseInfo) {
+        license = repo.licenseInfo.hidden ? null : repo.licenseInfo.name;
+      }
+      const issues = self.issues(repo.issues);
+      const labels = self.removeNodeProperty(repo.labels.nodes);
+      const topics = self.removeNodeProperty(repo.labels.nodes);
+      const languages = self.languages(repo.languages.edges);
+      const collaborators = self.collaborators(
+        repo.owner.login,
+        repo.collaborators.nodes
+      );
+      const releases = self.releases(repo.releases.nodes);
+      const projects = self.removeNodeProperty(repo.projects.nodes);
+      repos.push({
+        name: repo.name,
+        url: repo.url,
+        description: repo.description,
+        stars: repo.stargazerCount,
+        banner: banner,
+        owner: repo.owner.login,
+        updatedAt: repo.updatedAt,
+        createdAt: repo.createdAt,
+        forks: repo.forkCount,
+        isArchived: repo.isArchived,
+        wikiUrl: wikiUrl,
+        blog: blog,
+        license: repo.licenseInfo,
+        commits: repo.defaultBranchRef.target.history.totalCount,
+        issues: issues,
+        pullRequests: repo.pullRequests.totalCount,
+        labels: labels,
+        topics: topics,
+        mainLanguage: repo.primaryLanguage,
+        languages: languages,
+        collaborators: collaborators,
+        releases: releases,
+        projectsUrl: repo.projectsUrl,
+        projects: projects,
+      });
+    }
+    return repos;
+  },
+
+  collaborators: (owner, nodes) => {
+    let collaborators = [];
+    for (const user of nodes) {
+      if (user.login === owner) {
+        collaborators.push({
+          name: user.name,
+          login: user.login,
+          avatar: user.avatarUrl,
+          url: user.url,
+          isAdmin: true,
+        });
+      } else {
+        collaborators.push({
+          name: user.name,
+          login: user.login,
+          avatar: user.avatarUrl,
+          url: user.url,
+          isAdmin: false,
+        });
+      }
+    }
+    return collaborators;
+  },
+
+  issues: (issues) => {
+    let issuesCount = { total: 0, open: 0, closed: 0 };
+    if (issues.totalCount > 0) {
+      for (const issue of issues.nodes) {
+        if (issue.state === "CLOSED") {
+          issuesCount.closed++;
+        } else {
+          issuesCount.open++;
+        }
+        issuesCount.total++;
+      }
+    }
+    return issuesCount;
+  },
+
+  languages: (edges) => {
+    let languages = [];
+    for (const lang of edges) {
+      languages.push({
+        size: lang.size,
+        name: lang.node.name,
+        color: lang.node.color,
+      });
+    }
+    return languages;
+  },
+
+  removeNodeProperty: (nodes) => {
+    let values = [];
+    for (const node of nodes) {
+      values.push(node);
+    }
+    return values;
   },
 
   user: (user) => {
@@ -44,20 +144,20 @@ module.exports = {
       let rel = {
         owner: release.author.login,
         name: release.name,
-        body: release.body,
-        tagname: release.tag_name,
-        url: release.html_url,
-        draft: release.draft,
-        published: release.published_at,
-        src_zip_url: release.zipball_url,
+        description: release.description,
+        tagname: release.tagName,
+        url: release.url,
+        isDraft: release.isDraft,
+        publishedAt: release.publishedAt,
+        srcZipUrl: release.tagCommit.zipballUrl,
         assets: [],
       };
-      for (const asset of release.assets) {
+      for (const asset of release.releaseAssets.nodes) {
         rel.assets.push({
           name: asset.name,
           size: asset.size,
-          download_count: asset.download_count,
-          download_url: asset.browser_download_url,
+          downloadCount: asset.downloadCount,
+          downloadUrl: asset.downloadUrl,
         });
       }
       rels.push(rel);
@@ -109,4 +209,4 @@ module.exports = {
     }
     return stats;
   },
-};
+});
