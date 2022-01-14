@@ -159,19 +159,6 @@ const self = (module.exports = {
     return rels;
   },
 
-  contributors: (contributors) => {
-    let contr = [];
-    for (const contributor of contributors) {
-      contr.push({
-        username: contributor.login,
-        avatar: contributor.avatar_url,
-        url: contributor.html_url,
-        commits: contributor.contributions,
-      });
-    }
-    return contr;
-  },
-
   stats: (name, stars, commits, pullRequests, issues, collaborations) => {
     const stats = {};
     for (const year in s.years()) {

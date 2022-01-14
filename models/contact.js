@@ -17,6 +17,10 @@ const gitContactSchema = new Schema({
     description: {
         type: String,
         trim: true,
+    },
+    date: {
+        type: String,
+        trim: true,
     }
 })
 
