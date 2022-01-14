@@ -61,40 +61,6 @@ exports.getRepos = async (req, res) => {
 
 /*** COUNTS ***/
 
-exports.countStars = (req, res) => {
-  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
-    res.header("Content-Type", "application/json");
-    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
-    return;
-  }
-
-  reposModel.find({ type: "repository" }, function (err, docs) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      let totalStars = 0;
-      for (const doc of docs) {
-        totalStars += parseInt(doc.stars);
-      }
-
-      userModel.findOneAndUpdate(
-        { type: "user" },
-        { stars: totalStars },
-        (err, doc) => {
-          if (err) {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-          } else {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ stars: totalStars }, null, 2));
-          }
-        }
-      );
-    }
-  });
-};
-
 exports.countCollab = (req, res) => {
   if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
     res.header("Content-Type", "application/json");
