@@ -2,7 +2,6 @@ const endpoint = require("../services/endPoints");
 const json = require("../services/json");
 const s = require("../services/services");
 const orgsModel = require("../models/orgs");
-const statsModel = require("../models/stats");
 
 /*** USER ***/
 
