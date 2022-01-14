@@ -1,10 +1,7 @@
 const endpoint = require("../services/endPoints");
 const json = require("../services/json");
 const s = require("../services/services");
-const userModel = require("../models/user");
 const orgsModel = require("../models/orgs");
-const reposModel = require("../models/repos");
-const collabsModel = require("../models/collabs");
 const statsModel = require("../models/stats");
 
 /*** USER ***/
@@ -57,60 +54,6 @@ exports.getRepos = async (req, res) => {
   const repos = json.repositories(publicRepos);
   res.header("Content-Type", "application/json");
   res.send(JSON.stringify({ repos }, null, 2));
-};
-
-/*** COUNTS ***/
-
-exports.countLang = (req, res) => {
-  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
-    res.header("Content-Type", "application/json");
-    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
-    return;
-  }
-
-  let langsJson = {};
-  let langs = [];
-  reposModel.find({ type: "repository" }, function (err, docs) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      for (const repo of docs) {
-        if (
-          repo.languages &&
-          repo.name != "wordpress-the-dynamic" &&
-          repo.name != "wordpress-mundo-anime"
-        ) {
-          Object.keys(repo.languages).forEach(function (key) {
-            if (!langsJson[key]) {
-              langsJson[key] = 0;
-            }
-            langsJson[key] += repo.languages[key];
-          });
-        }
-      }
-      Object.keys(langsJson).forEach(function (key) {
-        langs.push({ name: key, lines: langsJson[key] });
-      });
-      langs.sort(function (a, b) {
-        return a.lines - b.lines;
-      });
-      langs.reverse();
-      userModel.findOneAndUpdate(
-        { type: "user" },
-        { languages: langs },
-        (err, doc) => {
-          if (err) {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-          } else {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ languages: langs }, null, 2));
-          }
-        }
-      );
-    }
-  });
 };
 
 /*** USER STATUS ***/

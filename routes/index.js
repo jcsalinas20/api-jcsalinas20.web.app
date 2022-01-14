@@ -13,7 +13,5 @@ module.exports = () => {
 
   routes.get("/stats/get/:year/:theme", control.getStats);
 
-  routes.get("/count/lang", control.countLang);
-
   return routes;
 };
