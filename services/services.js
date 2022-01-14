@@ -71,6 +71,28 @@ const self = (module.exports = {
     return { 2022: 0, 2021: 0, 2020: 0 };
   },
 
+  auth: (origin, token, level) => {
+    let allowedOrigins = JSON.parse(process.env.ALLOWED_ORIGIN);
+    if (level === 1) {
+      if (allowedOrigins.indexOf(origin) != -1) {
+        return true;
+      } else if (token === process.env.JWT_API) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  getOnlyPublicRepos: (repos) => {
+    let publicRepos = [];
+    for (const repo of repos) {
+        if (!repo.isPrivate) {
+          publicRepos.push(repo);
+        }
+    }
+    return publicRepos;
+  },
+
   getCommitsFromGithubPage: async (username) => {
     const years = ["2020", "2021"];
     let countCommits = self.years();
@@ -123,22 +145,22 @@ const self = (module.exports = {
   },
 
   getStars: (repos) => {
-    let countCollaborations = self.years();
+    let countStars = self.years();
     for (const repo of repos) {
       if (repo.stargazers.totalCount > 0) {
         for (const star of repo.stargazers.nodes) {
           const year = star.createdAt.slice(0, 4);
           if (year === "2019") {
-            countCollaborations["2020"]++;
+            countStars["2020"]++;
           } else {
-            countCollaborations[year]++;
+            countStars[year]++;
           }
         }
       } else {
         break;
       }
     }
-    return countCollaborations;
+    return countStars;
   },
 
   getCollaborations: (repos) => {
@@ -204,6 +226,77 @@ const self = (module.exports = {
     }
     return countPullRequests;
   },
+
+  countGitStats: (repos, username) => {
+    let counts = {
+      stars: {
+        total: 0,
+        public: 0,
+        private: 0,
+      },
+      collabs: {
+        total: 0,
+        public: 1,
+        private: 0,
+      },
+      repos: {
+        total: 0,
+        public: 0,
+        private: 0,
+      },
+      langs: [],
+    };
+    let jsonLangs = {};
+    for (const repo of repos) {
+      if (repo.isPrivate) {
+        counts.stars.private += repo.stargazerCount;
+        if (repo.owner.login === username) {
+          counts.repos.private++;
+        } else {
+          counts.collabs.private++;
+        }
+      } else {
+        counts.stars.public += repo.stargazerCount;
+        if (repo.owner.login === username) {
+          counts.repos.public++;
+        } else {
+          counts.collabs.public++;
+        }
+      }
+      for (const lang of repo.languages.edges) {
+        if (
+          repo.name != "wordpress-the-dynamic" &&
+          repo.name != "wordpress-mundo-anime"
+        ) {
+          if (!jsonLangs[lang.node.name]) {
+            jsonLangs[lang.node.name] = {
+              color: lang.node.color,
+              size: lang.size,
+            };
+          } else {
+            jsonLangs[lang.node.name].size += lang.size;
+          }
+        }
+      }
+    }
+    Object.keys(jsonLangs).forEach(function (key) {
+      counts.langs.push({
+        name: key,
+        size: jsonLangs[key].size,
+        color: jsonLangs[key].color,
+      });
+    });
+    counts.langs.sort(function (a, b) {
+      return a.size - b.size;
+    });
+    counts.langs.reverse();
+    counts.stars.total = counts.stars.public + counts.stars.private;
+    counts.repos.total = counts.repos.public + counts.repos.private;
+    counts.collabs.total = counts.collabs.public + counts.collabs.private;
+    return counts;
+  },
+
+  /*** SVG STATS ***/
 
   calculate: (details) => {
     let overallScores = 0;

@@ -4,99 +4,196 @@ const axios = require("axios");
 const json = require("./json");
 
 module.exports = {
-  getUser: async (username) => {
-    const req = endpoint("GET /users/{user}", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-    });
-    return await axios(req).then((res) => {
-      return res.data;
-    });
-  },
-
-  getRepos: async (username) => {
-    const req = endpoint("GET /users/{user}/repos", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-    });
-    return await axios(req).then((res) => {
-      return res.data;
-    });
-  },
-  getLang: async (username, repository) => {
-    const req = endpoint("GET /repos/{user}/{repo}/languages", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-      repo: repository,
-    });
-    return await axios(req).then((res) => {
-      return res.data;
-    });
-  },
-
-  getReleases: async (username, repository) => {
-    const req = endpoint("GET /repos/{user}/{repo}/releases", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-      repo: repository,
-    });
-    return json.releases(
-      await axios(req).then((res) => {
-        return res.data;
-      })
+  getGitStats: async (username) => {
+    return await graphql(
+      `
+        query ($username: String!) {
+          user(login: $username) {
+            avatarUrl
+            websiteUrl
+            company
+            email
+            location
+            name
+            twitterUsername
+            url
+            login
+            followers {
+              totalCount
+            }
+            repositories(
+              ownerAffiliations: [OWNER, COLLABORATOR]
+              isFork: false
+              first: 100
+            ) {
+              nodes {
+                name
+                isPrivate
+                owner {
+                  login
+                }
+                stargazerCount
+                languages(
+                  first: 10
+                  orderBy: { field: SIZE, direction: DESC }
+                ) {
+                  edges {
+                    size
+                    node {
+                      color
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      {
+        username: username,
+        headers: {
+          authorization: `token ${process.env.GITHUB_TOKEN}`,
+        },
+      }
     );
   },
 
-  getUser: async (username) => {
-    const req = endpoint("GET /users/{user}", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-    });
-    return await axios(req).then((res) => {
-      return res.data;
-    });
-  },
-
-  getPublicCollabs: async (username, repository) => {
-    const req = endpoint("GET /repos/{user}/{repo}", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-      repo: repository,
-    });
-
-    return await axios(req).then((res) => {
-      return res.data;
-    });
-  },
-
-  getContributors: async (username, repository) => {
-    const req = endpoint("GET /repos/{user}/{repo}/contributors", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-      repo: repository,
-    });
-
-    return json.contributors(
-      await axios(req).then((res) => {
-        return res.data;
-      })
+  getRepositories: async (username) => {
+    return await graphql(
+      `
+        query ($username: String!) {
+          user(login: $username) {
+            repositories(
+              first: 100
+              ownerAffiliations: [OWNER, COLLABORATOR]
+            ) {
+              nodes {
+                isPrivate
+                name
+                url
+                description
+                stargazerCount
+                usesCustomOpenGraphImage
+                openGraphImageUrl
+                owner {
+                  login
+                }
+                updatedAt
+                createdAt
+                forkCount
+                isArchived
+                hasWikiEnabled
+                homepageUrl
+                licenseInfo {
+                  name
+                  hidden
+                }
+                defaultBranchRef {
+                  target {
+                    ... on Commit {
+                      history(first: 1) {
+                        totalCount
+                      }
+                    }
+                  }
+                }
+                issues(
+                  orderBy: { field: CREATED_AT, direction: ASC }
+                  first: 100
+                ) {
+                  totalCount
+                  nodes {
+                    state
+                  }
+                }
+                pullRequests(first: 1) {
+                  totalCount
+                }
+                labels(first: 10) {
+                  nodes {
+                    color
+                    description
+                    name
+                    isDefault
+                  }
+                }
+                repositoryTopics(first: 10) {
+                  nodes {
+                    topic {
+                      name
+                    }
+                  }
+                }
+                primaryLanguage {
+                  color
+                  name
+                }
+                languages(
+                  first: 10
+                  orderBy: { field: SIZE, direction: DESC }
+                ) {
+                  edges {
+                    size
+                    node {
+                      color
+                      name
+                    }
+                  }
+                }
+                collaborators {
+                  nodes {
+                    avatarUrl
+                    login
+                    name
+                    url
+                  }
+                }
+                releases(first: 10) {
+                  nodes {
+                    author {
+                      login
+                    }
+                    name
+                    description
+                    tagName
+                    url
+                    isDraft
+                    publishedAt
+                    tagCommit {
+                      zipballUrl
+                    }
+                    releaseAssets(last: 10) {
+                      nodes {
+                        name
+                        size
+                        downloadCount
+                        downloadUrl
+                      }
+                    }
+                  }
+                }
+                projectsUrl
+                projects(first: 10) {
+                  nodes {
+                    name
+                    url
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      {
+        username: username,
+        headers: {
+          authorization: `token ${process.env.GITHUB_TOKEN}`,
+        },
+      }
     );
   },
-  
+
   getPrivateCollabs: async (username) => {
     return await graphql(
       `
@@ -107,7 +204,6 @@ module.exports = {
               totalCount
               edges {
                 repository: node {
-                  id
                   name
                   isPrivate
                   createdAt

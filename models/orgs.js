@@ -6,6 +6,10 @@ const gitOrgsSchema = new Schema({
         type: String,
         trim: true
     },
+    user: {
+        type: String,
+        trim: true
+    },
     username: {
         type: String,
         trim: true

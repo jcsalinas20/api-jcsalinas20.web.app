@@ -1,306 +1,86 @@
 const endpoint = require("../services/endPoints");
 const json = require("../services/json");
 const s = require("../services/services");
-const userModel = require("../models/user");
 const orgsModel = require("../models/orgs");
-const reposModel = require("../models/repos");
-const collabsModel = require("../models/collabs");
 const statsModel = require("../models/stats");
 
 /*** USER ***/
 
-exports.updateUser = async (req, res) => {
-  const user = await endpoint.getUser("jcsalinas20");
-  userModel.findOneAndUpdate({ type: "user" }, json.user(user), (err, doc) => {
-    if (doc) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: true }, null, 2));
-    } else {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    }
-  });
-};
-
 exports.getUser = async (req, res) => {
-  userModel.findOne({ type: "user" }, function (err, doc) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ user: doc }, null, 2));
-    }
-  });
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
+  const gitStats = await endpoint.getGitStats(req.params.user);
+  const user = json.user(gitStats.user);
+  res.header("Content-Type", "application/json");
+  res.send(JSON.stringify({ user }, null, 2));
+  return;
 };
 
 /*** ORGANIZATIONS ***/
 
 exports.getOrgs = (req, res) => {
-  orgsModel.find({ type: "organization" }, function (err, doc) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ orgs: doc }, null, 2));
-    }
-  });
-};
-
-/*** REPOSITORIES ***/
-
-exports.updateRepos = async (req, res) => {
-  let reposStatus = {};
-  const repos = await endpoint.getRepos("jcsalinas20");
-  let cont = 0;
-
-  for await (const repo of repos) {
-    cont++;
-    reposModel.findOne(
-      { type: "repository", id: repo.id },
-      async (err, doc) => {
-        if (err) {
-          reposStatus[repo.full_name] = "Failed";
-        } else {
-          if (doc) {
-            if (repo.updated_at > doc.updated) {
-              const lang = await endpoint.getLang(repo.owner.login, repo.name);
-              const releases = await endpoint.getReleases(
-                repo.owner.login,
-                repo.name
-              );
-
-              reposStatus[repo.full_name] = "Updated";
-              const updated = await reposModel.updateOne(
-                { type: "repository", id: repo.id },
-                json.repository(repo, lang, releases)
-              );
-
-              if (updated.ok) {
-                reposStatus[repo.full_name] = "Updated";
-              } else {
-                reposStatus[repo.full_name] = "Failed";
-              }
-            } else {
-              reposStatus[repo.full_name] = "No changes";
-            }
-          } else {
-            const lang = await endpoint.getLang(repo.owner.login, repo.name);
-            const releases = await endpoint.getReleases(
-              repo.owner.login,
-              repo.name
-            );
-            reposModel.create(json.repository(repo, lang, releases));
-            reposStatus[repo.full_name] = "Created";
-          }
-        }
-      }
-    );
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
   }
-};
 
-exports.getRepos = async (req, res) => {
-  reposModel.find({ type: "repository" }, function (err, doc) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ repos: doc }, null, 2));
-    }
-  });
-};
-
-/*** COLLABORATIONS ***/
-
-exports.createCollab = async (req, res) => {
-  const collab = await endpoint.getPublicCollabs(req.body.user, req.body.repo);
-
-  collabsModel.findOne(
-    { type: "collaboration", id: collab.id },
-    async (err, doc) => {
+  orgsModel.find(
+    { type: "organization", user: req.params.user },
+    function (err, doc) {
       if (err) {
         res.header("Content-Type", "application/json");
-        res.send(JSON.stringify({ status: "Failed" }, null, 2));
+        res.send(JSON.stringify({ status: "Error 404" }, null, 2));
       } else {
-        if (doc) {
-          console.log(doc);
-          if (collab.updated_at > doc.updated) {
-            const lang = await endpoint.getLang(
-              collab.owner.login,
-              collab.name
-            );
-            const releases = await endpoint.getReleases(
-              collab.owner.login,
-              collab.name
-            );
-            const contributors = await endpoint.getContributors(
-              collab.owner.login,
-              collab.name
-            );
-            const updated = await collabsModel.updateOne(
-              { type: "collaboration", id: collab.id },
-              json.collaboration(collab, lang, releases, contributors)
-            );
-            if (updated.ok) {
-              res.header("Content-Type", "application/json");
-              res.send(JSON.stringify({ status: "Updated" }, null, 2));
-            } else {
-              res.header("Content-Type", "application/json");
-              res.send(JSON.stringify({ status: "Failed" }, null, 2));
-            }
-          } else {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "No changes" }, null, 2));
-          }
-        } else {
-          const lang = await endpoint.getLang(collab.owner.login, collab.name);
-          const releases = await endpoint.getReleases(
-            collab.owner.login,
-            collab.name
-          );
-          const contributors = await endpoint.getContributors(
-            collab.owner.login,
-            collab.name
-          );
-          collabsModel.create(
-            json.collaboration(collab, lang, releases, contributors)
-          );
-          res.header("Content-Type", "application/json");
-          res.send(JSON.stringify({ status: "Created" }, null, 2));
-        }
+        res.header("Content-Type", "application/json");
+        res.send(JSON.stringify({ orgs: doc }, null, 2));
       }
     }
   );
 };
 
-exports.getCollabs = (req, res) => {
-  collabsModel.find({ type: "collaboration" }, function (err, doc) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error" }, null, 2));
-      return {};
-    } else {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ collabs: doc }, null, 2));
-      return {};
-    }
-  });
-};
+/*** REPOSITORIES ***/
 
-/*** COUNTS ***/
+exports.getRepos = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
 
-exports.countStars = (req, res) => {
-  reposModel.find({ type: "repository" }, function (err, docs) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      let totalStars = 0;
-      for (const doc of docs) {
-        totalStars += parseInt(doc.stars);
-      }
-
-      userModel.findOneAndUpdate(
-        { type: "user" },
-        { stars: totalStars },
-        (err, doc) => {
-          if (err) {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-          } else {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ stars: totalStars }, null, 2));
-          }
-        }
-      );
-    }
-  });
-};
-
-exports.countCollab = (req, res) => {
-  collabsModel.find({ type: "collaboration" }, function (err, docs) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      userModel.findOneAndUpdate(
-        { type: "user" },
-        { collaborations: docs.length },
-        (err, doc) => {
-          if (err) {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-          } else {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ collaborations: docs.length }, null, 2));
-          }
-        }
-      );
-    }
-  });
-};
-
-exports.countLang = (req, res) => {
-  let langsJson = {};
-  let langs = [];
-  reposModel.find({ type: "repository" }, function (err, docs) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      for (const repo of docs) {
-        if (
-          repo.languages &&
-          repo.name != "wordpress-the-dynamic" &&
-          repo.name != "wordpress-mundo-anime"
-        ) {
-          Object.keys(repo.languages).forEach(function (key) {
-            if (!langsJson[key]) {
-              langsJson[key] = 0;
-            }
-            langsJson[key] += repo.languages[key];
-          });
-        }
-      }
-      Object.keys(langsJson).forEach(function (key) {
-        langs.push({ name: key, lines: langsJson[key] });
-      });
-      langs.sort(function (a, b) {
-        return a.lines - b.lines;
-      });
-      langs.reverse();
-      userModel.findOneAndUpdate(
-        { type: "user" },
-        { languages: langs },
-        (err, doc) => {
-          if (err) {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-          } else {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ languages: langs }, null, 2));
-          }
-        }
-      );
-    }
-  });
+  const allRepos = await endpoint.getRepositories(req.params.user);
+  const publicRepos = s.getOnlyPublicRepos(allRepos.user.repositories.nodes);
+  const repos = json.repositories(publicRepos);
+  res.header("Content-Type", "application/json");
+  res.send(JSON.stringify({ repos }, null, 2));
 };
 
 /*** USER STATUS ***/
 
-exports.putStats = async (req, res) => {
-  const collaborations = await endpoint.getPrivateCollabs("jcsalinas20");
-  const stars = await endpoint.getStars("jcsalinas20");
-  const issues = await endpoint.getIssues("jcsalinas20");
-  let pullRequests = await endpoint.getPullRequests("jcsalinas20");
-  const commits = await s.getCommitsFromGithubPage("jcsalinas20");
+exports.getStats = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
+  const theme = (req.params.theme) ? req.params.theme : null;
+  const user = req.params.user;
+
+  const collaborations = await endpoint.getPrivateCollabs(user);
+  const stars = await endpoint.getStars(user);
+  const issues = await endpoint.getIssues(user);
+  let pullRequests = await endpoint.getPullRequests(user);
+  const commits = await s.getCommitsFromGithubPage(user);
 
   let nextRequest = s.hasNextRequest(pullRequests.user.repositories.edges);
   if (nextRequest.first > 0) {
     const pullRequestsWithCursor = await endpoint.getPullRequestsWithCursor(
-      "jcsalinas20",
+      user,
       nextRequest.first,
       nextRequest.cursor
     );
@@ -329,44 +109,15 @@ exports.putStats = async (req, res) => {
     collaborationsPerYear
   );
 
-  for (const year in stats) {
-    if (Object.hasOwnProperty.call(stats, year)) {
-      statsModel.updateOne(
-        { year: year },
-        stats[year],
-        { upsert: true },
-        (err, doc) => {
-          if (err) {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "Failed" }, null, 2));
-            return;
-          } else {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "Updated" }, null, 2));
-            return;
-          }
-        }
-      );
+  let svg = { 2020: "", 2021: "", 2022: "" };
+  for (const key in stats) {
+    if (Object.hasOwnProperty.call(stats, key)) {
+      const rank = s.calculate(stats[key]);
+      svg[key] = s.createSvg(theme, stats[key], key, rank);;
     }
   }
-};
 
-exports.getStats = async (req, res) => {
-  const theme = req.params.theme;
-  const year = req.params.year;
-
-  statsModel.findOne({ year: year }, (err, doc) => {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Failed" }, null, 2));
-      return;
-    } else {
-      const rank = s.calculate(doc);
-      const svg = s.createSvg(theme, doc, year, rank);
-
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ svg }, null, 2));
-      return;
-    }
-  });
+  res.header("Content-Type", "application/json");
+  res.send(JSON.stringify({ svg }, null, 2));
+  return;
 };
