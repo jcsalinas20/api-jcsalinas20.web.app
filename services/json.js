@@ -15,7 +15,7 @@ const self = (module.exports = {
       }
       const issues = self.issues(repo.issues);
       const labels = self.removeNodeProperty(repo.labels.nodes);
-      const topics = self.removeNodeProperty(repo.repositoryTopics.nodes);
+      const topics = self.topics(repo.repositoryTopics.nodes);
       const languages = self.languages(repo.languages.edges);
       const collaborators = self.collaborators(
         repo.owner.login,
@@ -110,6 +110,14 @@ const self = (module.exports = {
       values.push(node);
     }
     return values;
+  },
+
+  topics: (nodes) => {
+    let topics = [];
+    for (const node of nodes) {
+      topics.push(node.topic.name);
+    }
+    return topics;
   },
 
   user: (user) => {
