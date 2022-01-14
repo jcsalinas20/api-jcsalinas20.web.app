@@ -159,24 +159,6 @@ const self = (module.exports = {
     return rels;
   },
 
-  collaboration: (collaboration, lang, releases, contributors) => {
-    return {
-      id: collaboration.id,
-      owner: collaboration.owner.login,
-      name: collaboration.name,
-      url: collaboration.html_url,
-      description: collaboration.description,
-      stars: collaboration.stargazers_count,
-      archived: collaboration.archived,
-      type: "collaboration",
-      languages: lang,
-      contributors: contributors,
-      topics: collaboration.topics,
-      releases: releases,
-      updated: collaboration.updated_at,
-    };
-  },
-
   contributors: (contributors) => {
     let contr = [];
     for (const contributor of contributors) {

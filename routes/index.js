@@ -9,10 +9,6 @@ module.exports = () => {
 
   routes.get("/:user/repos", control.getRepos);
 
-  routes.post("/collabs/post", control.createCollab);
-
-  routes.get("/collabs/get", control.getCollabs);
-
   routes.get("/stats/put", control.putStats);
 
   routes.get("/stats/get/:year/:theme", control.getStats);

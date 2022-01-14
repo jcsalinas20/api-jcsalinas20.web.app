@@ -65,9 +65,8 @@ module.exports = {
         query ($username: String!) {
           user(login: $username) {
             repositories(
-              isFork: false
               first: 100
-              ownerAffiliations: [COLLABORATOR, OWNER]
+              ownerAffiliations: [OWNER, COLLABORATOR]
             ) {
               nodes {
                 isPrivate
@@ -192,36 +191,6 @@ module.exports = {
           authorization: `token ${process.env.GITHUB_TOKEN}`,
         },
       }
-    );
-  },
-
-  getPublicCollabs: async (username, repository) => {
-    const req = endpoint("GET /repos/{user}/{repo}", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-      repo: repository,
-    });
-
-    return await axios(req).then((res) => {
-      return res.data;
-    });
-  },
-
-  getContributors: async (username, repository) => {
-    const req = endpoint("GET /repos/{user}/{repo}/contributors", {
-      headers: {
-        authorization: `token ${process.env.GITHUB_TOKEN}`,
-      },
-      user: username,
-      repo: repository,
-    });
-
-    return json.contributors(
-      await axios(req).then((res) => {
-        return res.data;
-      })
     );
   },
 
