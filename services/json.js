@@ -15,7 +15,7 @@ const self = (module.exports = {
       }
       const issues = self.issues(repo.issues);
       const labels = self.removeNodeProperty(repo.labels.nodes);
-      const topics = self.removeNodeProperty(repo.labels.nodes);
+      const topics = self.removeNodeProperty(repo.repositoryTopics.nodes);
       const languages = self.languages(repo.languages.edges);
       const collaborators = self.collaborators(
         repo.owner.login,
