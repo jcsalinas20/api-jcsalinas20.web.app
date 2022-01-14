@@ -5,7 +5,7 @@ const control = require("../controllers/controller");
 module.exports = () => {
   routes.get("/:user", control.getUser);
 
-  routes.get("/orgs/get", control.getOrgs);
+  routes.get("/:user/orgs", control.getOrgs);
 
   routes.get("/:user/repos", control.getRepos);
 

@@ -32,7 +32,7 @@ exports.getOrgs = (req, res) => {
     return;
   }
 
-  orgsModel.find({ type: "organization" }, function (err, doc) {
+  orgsModel.find({ type: "organization", user: req.params.user }, function (err, doc) {
     if (err) {
       res.header("Content-Type", "application/json");
       res.send(JSON.stringify({ status: "Error 404" }, null, 2));
