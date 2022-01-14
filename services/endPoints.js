@@ -204,7 +204,6 @@ module.exports = {
               totalCount
               edges {
                 repository: node {
-                  id
                   name
                   isPrivate
                   createdAt

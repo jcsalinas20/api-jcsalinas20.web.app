@@ -29,15 +29,18 @@ exports.getOrgs = (req, res) => {
     return;
   }
 
-  orgsModel.find({ type: "organization", user: req.params.user }, function (err, doc) {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Error 404" }, null, 2));
-    } else {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ orgs: doc }, null, 2));
+  orgsModel.find(
+    { type: "organization", user: req.params.user },
+    function (err, doc) {
+      if (err) {
+        res.header("Content-Type", "application/json");
+        res.send(JSON.stringify({ status: "Error 404" }, null, 2));
+      } else {
+        res.header("Content-Type", "application/json");
+        res.send(JSON.stringify({ orgs: doc }, null, 2));
+      }
     }
-  });
+  );
 };
 
 /*** REPOSITORIES ***/
@@ -58,23 +61,26 @@ exports.getRepos = async (req, res) => {
 
 /*** USER STATUS ***/
 
-exports.putStats = async (req, res) => {
-  if (!s.auth(req.headers.origin, req.headers.authorization, 2)) {
+exports.getStats = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
     res.header("Content-Type", "application/json");
     res.send(JSON.stringify({ status: "Error 503" }, null, 2));
     return;
   }
 
-  const collaborations = await endpoint.getPrivateCollabs("jcsalinas20");
-  const stars = await endpoint.getStars("jcsalinas20");
-  const issues = await endpoint.getIssues("jcsalinas20");
-  let pullRequests = await endpoint.getPullRequests("jcsalinas20");
-  const commits = await s.getCommitsFromGithubPage("jcsalinas20");
+  const theme = (req.params.theme) ? req.params.theme : null;
+  const user = req.params.user;
+
+  const collaborations = await endpoint.getPrivateCollabs(user);
+  const stars = await endpoint.getStars(user);
+  const issues = await endpoint.getIssues(user);
+  let pullRequests = await endpoint.getPullRequests(user);
+  const commits = await s.getCommitsFromGithubPage(user);
 
   let nextRequest = s.hasNextRequest(pullRequests.user.repositories.edges);
   if (nextRequest.first > 0) {
     const pullRequestsWithCursor = await endpoint.getPullRequestsWithCursor(
-      "jcsalinas20",
+      user,
       nextRequest.first,
       nextRequest.cursor
     );
@@ -103,50 +109,15 @@ exports.putStats = async (req, res) => {
     collaborationsPerYear
   );
 
-  for (const year in stats) {
-    if (Object.hasOwnProperty.call(stats, year)) {
-      statsModel.updateOne(
-        { year: year },
-        stats[year],
-        { upsert: true },
-        (err, doc) => {
-          if (err) {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "Failed" }, null, 2));
-            return;
-          } else {
-            res.header("Content-Type", "application/json");
-            res.send(JSON.stringify({ status: "Updated" }, null, 2));
-            return;
-          }
-        }
-      );
+  let svg = { 2020: "", 2021: "", 2022: "" };
+  for (const key in stats) {
+    if (Object.hasOwnProperty.call(stats, key)) {
+      const rank = s.calculate(stats[key]);
+      svg[key] = s.createSvg(theme, stats[key], key, rank);;
     }
   }
-};
 
-exports.getStats = async (req, res) => {
-  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
-    res.header("Content-Type", "application/json");
-    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
-    return;
-  }
-
-  const theme = req.params.theme;
-  const year = req.params.year;
-
-  statsModel.findOne({ year: year }, (err, doc) => {
-    if (err) {
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ status: "Failed" }, null, 2));
-      return;
-    } else {
-      const rank = s.calculate(doc);
-      const svg = s.createSvg(theme, doc, year, rank);
-
-      res.header("Content-Type", "application/json");
-      res.send(JSON.stringify({ svg }, null, 2));
-      return;
-    }
-  });
+  res.header("Content-Type", "application/json");
+  res.send(JSON.stringify({ svg }, null, 2));
+  return;
 };

@@ -9,9 +9,7 @@ module.exports = () => {
 
   routes.get("/:user/repos", control.getRepos);
 
-  routes.get("/stats/put", control.putStats);
-
-  routes.get("/stats/get/:year/:theme", control.getStats);
+  routes.get("/:user/stats/:theme", control.getStats);
 
   return routes;
 };

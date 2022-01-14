@@ -145,22 +145,22 @@ const self = (module.exports = {
   },
 
   getStars: (repos) => {
-    let countCollaborations = self.years();
+    let countStars = self.years();
     for (const repo of repos) {
       if (repo.stargazers.totalCount > 0) {
         for (const star of repo.stargazers.nodes) {
           const year = star.createdAt.slice(0, 4);
           if (year === "2019") {
-            countCollaborations["2020"]++;
+            countStars["2020"]++;
           } else {
-            countCollaborations[year]++;
+            countStars[year]++;
           }
         }
       } else {
         break;
       }
     }
-    return countCollaborations;
+    return countStars;
   },
 
   getCollaborations: (repos) => {
