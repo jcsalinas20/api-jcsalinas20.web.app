@@ -1,54 +1,72 @@
 const s = require("./services");
 
 const self = (module.exports = {
-  repositories: (publicRepos) => {
+  repositories: (publicRepos, basic) => {
     let repos = [];
     for (const repo of publicRepos) {
+      const topics = self.topics(repo.repositoryTopics.nodes);
       const banner = repo.usesCustomOpenGraphImage
         ? repo.openGraphImageUrl
         : null;
-      const wikiUrl = repo.hasWikiEnabled ? repo.url + "/wiki" : null;
-      const blog = repo.homepageUrl ? repo.homepageUrl : null;
-      let license = null;
-      if (repo.licenseInfo) {
-        license = repo.licenseInfo.hidden ? null : repo.licenseInfo.name;
+      // if (!basic) {
+      // const wikiUrl = repo.hasWikiEnabled ? repo.url + "/wiki" : null;
+      // const blog = repo.homepageUrl ? repo.homepageUrl : null;
+      // let license = (repo.licenseInfo) ? (repo.licenseInfo.hidden) ? null : repo.licenseInfo.name : null;
+      // const issues = self.issues(repo.issues);
+      // const labels = self.removeNodeProperty(repo.labels.nodes);
+      // const languages = self.languages(repo.languages.edges);
+      // const collaborators = self.collaborators(
+      //   repo.owner.login,
+      //   repo.collaborators.nodes
+      // );
+      // const releases = self.releases(repo.releases.nodes);
+      // const projects = self.removeNodeProperty(repo.projects.nodes);
+      // }
+      if (basic) {
+        repos.push({
+          name: repo.name,
+          url: repo.url,
+          description: repo.description,
+          stars: repo.stargazerCount,
+          banner: banner,
+          owner: repo.owner.login,
+          topics: topics,
+        });
+      } else {
+        repos.push({
+          name: repo.name,
+          url: repo.url,
+          description: repo.description,
+          stars: repo.stargazerCount,
+          banner: banner,
+          owner: repo.owner.login,
+          updatedAt: repo.updatedAt,
+          createdAt: repo.createdAt,
+          forks: repo.forkCount,
+          isArchived: repo.isArchived,
+          wikiUrl: repo.hasWikiEnabled ? repo.url + "/wiki" : null,
+          blog: repo.homepageUrl ? repo.homepageUrl : null,
+          license: repo.licenseInfo
+            ? repo.licenseInfo.hidden
+              ? null
+              : repo.licenseInfo.name
+            : null,
+          commits: repo.defaultBranchRef.target.history.totalCount,
+          issues: self.issues(repo.issues),
+          pullRequests: repo.pullRequests.totalCount,
+          labels: self.removeNodeProperty(repo.labels.nodes),
+          topics: topics,
+          mainLanguage: repo.primaryLanguage,
+          languages: self.languages(repo.languages.edges),
+          collaborators: self.collaborators(
+            repo.owner.login,
+            repo.collaborators.nodes
+          ),
+          releases: self.releases(repo.releases.nodes),
+          projectsUrl: repo.projectsUrl,
+          projects: self.removeNodeProperty(repo.projects.nodes),
+        });
       }
-      const issues = self.issues(repo.issues);
-      const labels = self.removeNodeProperty(repo.labels.nodes);
-      const topics = self.topics(repo.repositoryTopics.nodes);
-      const languages = self.languages(repo.languages.edges);
-      const collaborators = self.collaborators(
-        repo.owner.login,
-        repo.collaborators.nodes
-      );
-      const releases = self.releases(repo.releases.nodes);
-      const projects = self.removeNodeProperty(repo.projects.nodes);
-      repos.push({
-        name: repo.name,
-        url: repo.url,
-        description: repo.description,
-        stars: repo.stargazerCount,
-        banner: banner,
-        owner: repo.owner.login,
-        updatedAt: repo.updatedAt,
-        createdAt: repo.createdAt,
-        forks: repo.forkCount,
-        isArchived: repo.isArchived,
-        wikiUrl: wikiUrl,
-        blog: blog,
-        license: repo.licenseInfo,
-        commits: repo.defaultBranchRef.target.history.totalCount,
-        issues: issues,
-        pullRequests: repo.pullRequests.totalCount,
-        labels: labels,
-        topics: topics,
-        mainLanguage: repo.primaryLanguage,
-        languages: languages,
-        collaborators: collaborators,
-        releases: releases,
-        projectsUrl: repo.projectsUrl,
-        projects: projects,
-      });
     }
     return repos;
   },

@@ -51,9 +51,27 @@ exports.getRepos = async (req, res) => {
     return;
   }
 
-  const allRepos = await endpoint.getRepositories(req.params.user);
+  const allRepos = await endpoint.getRepositories(req.params.user, false);
   const publicRepos = s.getOnlyPublicRepos(allRepos.user.repositories.nodes);
-  const repos = json.repositories(publicRepos);
+  const repos = json.repositories(publicRepos, false);
+  res.header("Content-Type", "application/json");
+  res.send(JSON.stringify({ repos }, null, 2));
+};
+
+
+exports.getReposBasic = async (req, res) => {
+  if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
+    res.header("Content-Type", "application/json");
+    res.send(JSON.stringify({ status: "Error 503" }, null, 2));
+    return;
+  }
+
+  const user = req.params.user;
+  const type = (req.params.type === "basic") ? true : false ;
+
+  const allRepos = await endpoint.getRepositories(user, type);
+  const publicRepos = s.getOnlyPublicRepos(allRepos.user.repositories.nodes);
+  const repos = json.repositories(publicRepos, type);
   res.header("Content-Type", "application/json");
   res.send(JSON.stringify({ repos }, null, 2));
 };
