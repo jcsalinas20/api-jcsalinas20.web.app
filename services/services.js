@@ -94,7 +94,7 @@ const self = (module.exports = {
   },
 
   getCommitsFromGithubPage: async (username) => {
-    const years = ["2020", "2021"];
+    const years = ["2020", "2021", "2022"];
     let countCommits = self.years();
     for (const year of years) {
       const data = await axios(
