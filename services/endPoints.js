@@ -59,139 +59,141 @@ module.exports = {
     );
   },
 
-  getRepositories: async (username) => {
-    return await graphql(
-      `
-        query ($username: String!) {
-          user(login: $username) {
-            repositories(
-              first: 100
-              ownerAffiliations: [OWNER, COLLABORATOR]
-            ) {
+  getRepositories: async (username, basic) => {
+    const query = `
+    query ($username: String!) {
+      user(login: $username) {
+        repositories(
+          first: 100
+          ownerAffiliations: [OWNER, COLLABORATOR]
+        ) {
+          nodes {
+            isPrivate
+            name
+            url
+            description
+            stargazerCount
+            usesCustomOpenGraphImage
+            openGraphImageUrl
+            owner {
+              login
+            }
+            repositoryTopics(first: 10) {
               nodes {
-                isPrivate
-                name
-                url
-                description
-                stargazerCount
-                usesCustomOpenGraphImage
-                openGraphImageUrl
-                owner {
-                  login
-                }
-                updatedAt
-                createdAt
-                forkCount
-                isArchived
-                hasWikiEnabled
-                homepageUrl
-                licenseInfo {
-                  name
-                  hidden
-                }
-                defaultBranchRef {
-                  target {
-                    ... on Commit {
-                      history(first: 1) {
-                        totalCount
-                      }
-                    }
-                  }
-                }
-                issues(
-                  orderBy: { field: CREATED_AT, direction: ASC }
-                  first: 100
-                ) {
-                  totalCount
-                  nodes {
-                    state
-                  }
-                }
-                pullRequests(first: 1) {
-                  totalCount
-                }
-                labels(first: 10) {
-                  nodes {
-                    color
-                    description
-                    name
-                    isDefault
-                  }
-                }
-                repositoryTopics(first: 10) {
-                  nodes {
-                    topic {
-                      name
-                    }
-                  }
-                }
-                primaryLanguage {
-                  color
+                topic {
                   name
                 }
-                languages(
-                  first: 10
-                  orderBy: { field: SIZE, direction: DESC }
-                ) {
-                  edges {
-                    size
-                    node {
-                      color
-                      name
-                    }
-                  }
-                }
-                collaborators {
-                  nodes {
-                    avatarUrl
-                    login
-                    name
-                    url
-                  }
-                }
-                releases(first: 10) {
-                  nodes {
-                    author {
-                      login
-                    }
-                    name
-                    description
-                    tagName
-                    url
-                    isDraft
-                    publishedAt
-                    tagCommit {
-                      zipballUrl
-                    }
-                    releaseAssets(last: 10) {
-                      nodes {
-                        name
-                        size
-                        downloadCount
-                        downloadUrl
-                      }
-                    }
-                  }
-                }
-                projectsUrl
-                projects(first: 10) {
-                  nodes {
-                    name
-                    url
+              }
+            }
+            ${
+              basic
+                ? ``
+                : `
+            updatedAt
+            createdAt
+            forkCount
+            isArchived
+            hasWikiEnabled
+            homepageUrl
+            licenseInfo {
+              name
+              hidden
+            }
+            defaultBranchRef {
+              target {
+                ... on Commit {
+                  history(first: 1) {
+                    totalCount
                   }
                 }
               }
             }
+            issues(
+              orderBy: { field: CREATED_AT, direction: ASC }
+              first: 100
+            ) {
+              totalCount
+              nodes {
+                state
+              }
+            }
+            pullRequests(first: 1) {
+              totalCount
+            }
+            labels(first: 10) {
+              nodes {
+                color
+                description
+                name
+                isDefault
+              }
+            }
+            primaryLanguage {
+              color
+              name
+            }
+            languages(
+              first: 10
+              orderBy: { field: SIZE, direction: DESC }
+            ) {
+              edges {
+                size
+                node {
+                  color
+                  name
+                }
+              }
+            }
+            collaborators {
+              nodes {
+                avatarUrl
+                login
+                name
+                url
+              }
+            }
+            releases(first: 10) {
+              nodes {
+                author {
+                  login
+                }
+                name
+                description
+                tagName
+                url
+                isDraft
+                publishedAt
+                tagCommit {
+                  zipballUrl
+                }
+                releaseAssets(last: 10) {
+                  nodes {
+                    name
+                    size
+                    downloadCount
+                    downloadUrl
+                  }
+                }
+              }
+            }
+            projectsUrl
+            projects(first: 10) {
+              nodes {
+                name
+                url
+              }
+            }`
+            }
           }
         }
-      `,
-      {
-        username: username,
-        headers: {
-          authorization: `token ${process.env.GITHUB_TOKEN}`,
-        },
       }
-    );
+    }`;
+    return await graphql(query, {
+      username: username,
+      headers: {
+        authorization: `token ${process.env.GITHUB_TOKEN}`,
+      },
+    });
   },
 
   getPrivateCollabs: async (username) => {
