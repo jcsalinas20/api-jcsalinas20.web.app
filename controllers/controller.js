@@ -2,6 +2,7 @@ const endpoint = require("../services/endPoints");
 const json = require("../services/json");
 const s = require("../services/services");
 const orgsModel = require("../models/orgs");
+const moment = require("moment");
 
 /*** USER ***/
 
@@ -126,7 +127,13 @@ exports.getStats = async (req, res) => {
     collaborationsPerYear
   );
 
-  let svg = { 2020: "", 2021: "", 2022: "" };
+  let svg = {};
+  const startYear = 2020;
+  const endYear = moment().year();
+  for(var year = startYear; year <= endYear; year++) {
+    svg[year] = "";
+  }
+
   for (const key in stats) {
     if (Object.hasOwnProperty.call(stats, key)) {
       const rank = s.calculate(stats[key]);

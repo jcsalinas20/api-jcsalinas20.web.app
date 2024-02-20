@@ -1,5 +1,6 @@
 const cheerio = require("cheerio");
 const axios = require("axios");
+const moment = require("moment");
 
 const scores = [
   {
@@ -67,16 +68,39 @@ const metrics = {
 };
 
 const self = (module.exports = {
-  years: () => {
-    return { 2022: 0, 2021: 0, 2020: 0 };
+  years: (type) => {
+    if (type === "jsonAsc") {
+      let svg = {};
+      const startYear = 2020;
+      const endYear = moment().year();
+      for(var year = startYear; year <= endYear; year++) {
+        svg[year] = "";
+      }
+    } else if (type === "jsonDesc") {
+      let years = {};
+      const startYear = moment().year();
+      const endYear = 2020;
+      for(var year = startYear; year >= endYear; year--) {
+        years[year] = 0;
+      }
+      return years;
+    } else if (type === "array") {
+
+    }
   },
 
   auth: (origin, token, level) => {
     let allowedOrigins = JSON.parse(process.env.ALLOWED_ORIGIN);
     if (level === 1) {
+      var urlOK = false, jwtOK = false;
       if (allowedOrigins.indexOf(origin) != -1) {
-        return true;
-      } else if (token === process.env.JWT_API) {
+        urlOK = true;
+      } 
+      if (token === process.env.JWT_API) {
+        jwtOK = true;
+      }
+
+      if (urlOK && jwtOK) {
         return true;
       }
     }
@@ -92,10 +116,18 @@ const self = (module.exports = {
     }
     return publicRepos;
   },
+  
 
   getCommitsFromGithubPage: async (username) => {
-    const years = ["2020", "2021", "2022"];
-    let countCommits = self.years();
+    const startYear = 2020;
+    const endYear = moment().year();
+
+    var years = [];
+    for(var year = startYear; year <= endYear; year++) {
+      years.push(year);
+    }
+    
+    let countCommits = self.years("jsonDesc");
     for (const year of years) {
       const data = await axios(
         `https://github.com/${username}?tab=overview&from=${year}-12-01&to=${year}-12-31`
@@ -145,7 +177,7 @@ const self = (module.exports = {
   },
 
   getStars: (repos) => {
-    let countStars = self.years();
+    let countStars = self.years("jsonDesc");
     for (const repo of repos) {
       if (repo.stargazers.totalCount > 0) {
         for (const star of repo.stargazers.nodes) {
@@ -164,7 +196,7 @@ const self = (module.exports = {
   },
 
   getCollaborations: (repos) => {
-    let countCollaborations = self.years();
+    let countCollaborations = self.years("jsonDesc");
     for (const repo of repos) {
       const year = repo.repository.createdAt.slice(0, 4);
       if (year === "2019") {
@@ -177,7 +209,7 @@ const self = (module.exports = {
   },
 
   getIssues: (repos) => {
-    let countIssues = self.years();
+    let countIssues = self.years("jsonDesc");
     for (const repo of repos) {
       for (const issue of repo.repository.issues.edges) {
         if (issue.node.assignees.nodes.length > 0) {
@@ -207,7 +239,7 @@ const self = (module.exports = {
   },
 
   getPullRequests: (repos) => {
-    let countPullRequests = self.years();
+    let countPullRequests = self.years("jsonDesc");
     for (const repo of repos) {
       for (const pull of repo.repository.pullRequests.edges) {
         if (
