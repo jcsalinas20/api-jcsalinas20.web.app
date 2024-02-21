@@ -91,6 +91,7 @@ const self = (module.exports = {
 
   auth: (origin, token, level) => {
     let allowedOrigins = JSON.parse(process.env.ALLOWED_ORIGIN);
+    console.log(origin, allowedOrigins);
     if (level === 1) {
       var urlOK = false, jwtOK = false;
       if (allowedOrigins.indexOf(origin) != -1) {

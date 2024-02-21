@@ -61,6 +61,8 @@ exports.getRepos = async (req, res) => {
 
 
 exports.getReposBasic = async (req, res) => {
+  console.log(req.headers);
+  console.log(req.headers.origin);
   if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
     res.header("Content-Type", "application/json");
     res.send(JSON.stringify({ status: "Error 503" }, null, 2));
