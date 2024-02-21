@@ -26,6 +26,7 @@ const self = (module.exports = {
         repos.push({
           name: repo.name,
           url: repo.url,
+          show: true,
           description: repo.description,
           stars: repo.stargazerCount,
           banner: banner,
@@ -36,6 +37,7 @@ const self = (module.exports = {
         repos.push({
           name: repo.name,
           url: repo.url,
+          type: (repo.owner.login === "jcsalinas20") ? "owner" : "collaborator",
           description: repo.description,
           stars: repo.stargazerCount,
           banner: banner,
@@ -187,7 +189,7 @@ const self = (module.exports = {
 
   stats: (name, stars, commits, pullRequests, issues, collaborations) => {
     const stats = {};
-    for (const year in s.years()) {
+    for (const year in s.years("jsonDesc")) {
       stats[year] = {};
       stats[year].name = name;
       stats[year].stars = stars[year];

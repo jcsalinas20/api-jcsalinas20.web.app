@@ -2,6 +2,7 @@ const endpoint = require("../services/endPoints");
 const json = require("../services/json");
 const s = require("../services/services");
 const orgsModel = require("../models/orgs");
+const moment = require("moment");
 
 /*** USER ***/
 
@@ -60,6 +61,8 @@ exports.getRepos = async (req, res) => {
 
 
 exports.getReposBasic = async (req, res) => {
+  console.log(req.headers);
+  console.log(req.headers.origin);
   if (!s.auth(req.headers.origin, req.headers.authorization, 1)) {
     res.header("Content-Type", "application/json");
     res.send(JSON.stringify({ status: "Error 503" }, null, 2));
@@ -126,7 +129,13 @@ exports.getStats = async (req, res) => {
     collaborationsPerYear
   );
 
-  let svg = { 2020: "", 2021: "", 2022: "" };
+  let svg = {};
+  const startYear = 2020;
+  const endYear = moment().year();
+  for(var year = startYear; year <= endYear; year++) {
+    svg[year] = "";
+  }
+
   for (const key in stats) {
     if (Object.hasOwnProperty.call(stats, key)) {
       const rank = s.calculate(stats[key]);
